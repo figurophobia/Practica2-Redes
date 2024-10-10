@@ -21,7 +21,9 @@ int main(int argc, char *argv[]) {
     char buffer[BUFFER_SIZE] = {0};
     char *mensaje = "Hola desde el servidor";
 
-    // Crear descriptor de archivo del socket
+    // PASO 1: CREAR SOCKET
+    // Creamos el descriptor de archivo del socket
+    // Usamos AF_INET para IPv4 y SOCK_STREAM para conexión TCP
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
         perror("fallo en el socket");
         exit(EXIT_FAILURE);
