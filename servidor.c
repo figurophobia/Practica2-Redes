@@ -9,58 +9,58 @@
 
 int main(int argc, char *argv[]) {
     if (argc != 2) {
-        fprintf(stderr, "Usage: %s <port>\n", argv[0]);
+        fprintf(stderr, "Uso: %s <puerto>\n", argv[0]);
         exit(EXIT_FAILURE);
     }
 
-    int port = atoi(argv[1]);
-    int server_fd, new_socket;
-    struct sockaddr_in address;
-    struct sockaddr_in client_address;
-    socklen_t client_addrlen = sizeof(client_address);
+    int puerto = atoi(argv[1]);
+    int server_fd, nuevo_socket;
+    struct sockaddr_in direccion;
+    struct sockaddr_in direccion_cliente;
+    socklen_t tamano_direccion_cliente = sizeof(direccion_cliente);
     char buffer[BUFFER_SIZE] = {0};
-    char *message = "Hello from server";
+    char *mensaje = "Hola desde el servidor";
 
-    // Creating socket file descriptor
+    // Crear descriptor de archivo del socket
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
-        perror("socket failed");
+        perror("fallo en el socket");
         exit(EXIT_FAILURE);
     }
 
-    // Forcefully attaching socket to the port
-    address.sin_family = AF_INET;
-    address.sin_addr.s_addr = INADDR_ANY;
-    address.sin_port = htons(port);
+    // Adjuntar el socket al puerto de forma forzada
+    direccion.sin_family = AF_INET;
+    direccion.sin_addr.s_addr = INADDR_ANY;
+    direccion.sin_port = htons(puerto);
 
-    if (bind(server_fd, (struct sockaddr *)&address, sizeof(address)) < 0) {
-        perror("bind failed");
+    if (bind(server_fd, (struct sockaddr *)&direccion, sizeof(direccion)) < 0) {
+        perror("fallo en el bind");
         close(server_fd);
         exit(EXIT_FAILURE);
     }
 
     if (listen(server_fd, 5) < 0) {
-        perror("listen");
+        perror("fallo en el listen");
         close(server_fd);
         exit(EXIT_FAILURE);
     }
 
     while (1) {
-        printf("Waiting for a connection...\n");
-        if ((new_socket = accept(server_fd, (struct sockaddr *)&client_address, &client_addrlen)) < 0) {
-            perror("accept");
+        printf("Esperando una conexión...\n");
+        if ((nuevo_socket = accept(server_fd, (struct sockaddr *)&direccion_cliente, &tamano_direccion_cliente)) < 0) {
+            perror("fallo en el accept");
             close(server_fd);
             exit(EXIT_FAILURE);
         }
 
-        char client_ip[INET_ADDRSTRLEN];
-        inet_ntop(AF_INET, &client_address.sin_addr, client_ip, INET_ADDRSTRLEN);
-        int client_port = ntohs(client_address.sin_port);
+        char ip_cliente[INET_ADDRSTRLEN];
+        inet_ntop(AF_INET, &direccion_cliente.sin_addr, ip_cliente, INET_ADDRSTRLEN);
+        int puerto_cliente = ntohs(direccion_cliente.sin_port);
 
-        printf("Connection accepted from %s:%d\n", client_ip, client_port);
-        send(new_socket, message, strlen(message), 0);
-        printf("Message sent to %s:%d\n", client_ip, client_port);
+        printf("Conexión aceptada desde %s:%d\n", ip_cliente, puerto_cliente);
+        send(nuevo_socket, mensaje, strlen(mensaje), 0);
+        printf("Mensaje enviado a %s:%d\n", ip_cliente, puerto_cliente);
 
-        close(new_socket);
+        close(nuevo_socket);
     }
 
     close(server_fd);
