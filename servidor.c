@@ -19,6 +19,7 @@ int main(int argc, char *argv[]) {
     struct sockaddr_in direccion_servidor, direccion_cliente;
     socklen_t cliente_len = sizeof(direccion_cliente);
     char buffer[BUFFER_SIZE] = "¡Hola, cliente! Bienvenido al servidor.\n";
+    char buffer2[BUFFER_SIZE] = "¡Hola, cliente! Bienvenido al servidor v.2.\n";
 
     // Crear socket del servidor
     servidor_socket = socket(AF_INET, SOCK_STREAM, 0);
@@ -28,7 +29,6 @@ int main(int argc, char *argv[]) {
     }
 
     // Configurar la dirección del servidor
-    memset(&direccion_servidor, 0, sizeof(direccion_servidor));
     direccion_servidor.sin_family = AF_INET;
     direccion_servidor.sin_addr.s_addr = INADDR_ANY; // Escuchar en todas las interfaces
     direccion_servidor.sin_port = htons(atoi(argv[1])); // Puerto desde la línea de comandos
@@ -70,6 +70,15 @@ int main(int argc, char *argv[]) {
         } else {
             printf("Mensaje enviado al cliente (%ld bytes)\n", enviado);
         }
+
+        // Enviar mensaje de saludo al cliente
+        ssize_t enviado2 = send(cliente_socket, buffer2, strlen(buffer2), 0);
+        if (enviado2 < 0) {
+            perror("Error al enviar el mensaje al cliente");
+        } else {
+            printf("Mensaje enviado al cliente (%ld bytes)\n", enviado2);
+        }
+
 
         // Cerrar el socket de conexión con el cliente
         close(cliente_socket);
