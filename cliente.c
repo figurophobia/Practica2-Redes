@@ -51,8 +51,6 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    // Añadir terminador nulo al final del mensaje recibido
-    buffer[bytes_received] = '\0';
 
     // Mostrar el mensaje recibido y el número de bytes
     printf("Mensaje recibido: %s\n", buffer);

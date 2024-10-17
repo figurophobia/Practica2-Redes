@@ -10,16 +10,22 @@
 #define BUFFER_SIZE 1024
 
 int main(int argc, char *argv[]) {
-    if (argc != 2) {
-        fprintf(stderr, "Uso: %s <puerto>\n", argv[0]);
-        exit(EXIT_FAILURE);
+
+    int puerto = 0;
+    // Verificar que se haya pasado el puerto como argumento
+    if (argc == 2 && atoi(argv[1]) > 0 && atoi(argv[1]) < 65536) {
+        printf("Puerto: %s\n", argv[1]);
+        puerto = atoi(argv[1]);
+    } else {
+        printf("Usando el puerto 50000 por defecto\n");
+        puerto = 50000;
     }
+
 
     int servidor_socket, cliente_socket;
     struct sockaddr_in direccion_servidor, direccion_cliente;
     socklen_t cliente_len = sizeof(direccion_cliente);
     char buffer[BUFFER_SIZE] = "¡Hola, cliente! Bienvenido al servidor.\n";
-    char buffer2[BUFFER_SIZE] = "¡Hola, cliente! Bienvenido al servidor v.2.\n";
 
     // Crear socket del servidor
     servidor_socket = socket(AF_INET, SOCK_STREAM, 0);
@@ -31,8 +37,7 @@ int main(int argc, char *argv[]) {
     // Configurar la dirección del servidor
     direccion_servidor.sin_family = AF_INET;
     direccion_servidor.sin_addr.s_addr = INADDR_ANY; // Escuchar en todas las interfaces
-    direccion_servidor.sin_port = htons(atoi(argv[1])); // Puerto desde la línea de comandos
-
+    direccion_servidor.sin_port = htons(puerto);
     // Asociar el socket con la dirección y puerto
     if (bind(servidor_socket, (struct sockaddr *)&direccion_servidor, sizeof(direccion_servidor)) < 0) {
         perror("Error al hacer bind en el socket del servidor");
@@ -47,7 +52,7 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    printf("Servidor esperando conexiones en el puerto %s...\n", argv[1]);
+    printf("Servidor esperando conexiones en el puerto %d...\n", puerto);
 
     while (1) {
         // Aceptar una conexión de cliente
@@ -64,19 +69,11 @@ int main(int argc, char *argv[]) {
         printf("Conexión aceptada de %s:%d\n", cliente_ip, ntohs(direccion_cliente.sin_port));
 
         // Enviar mensaje de saludo al cliente
-        ssize_t enviado = send(cliente_socket, buffer, strlen(buffer), 0);
+        ssize_t enviado = send(cliente_socket, buffer, strlen(buffer)+1, 0);
         if (enviado < 0) {
             perror("Error al enviar el mensaje al cliente");
         } else {
             printf("Mensaje enviado al cliente (%ld bytes)\n", enviado);
-        }
-
-        // Enviar mensaje de saludo al cliente
-        ssize_t enviado2 = send(cliente_socket, buffer2, strlen(buffer2), 0);
-        if (enviado2 < 0) {
-            perror("Error al enviar el mensaje al cliente");
-        } else {
-            printf("Mensaje enviado al cliente (%ld bytes)\n", enviado2);
         }
 
 
