@@ -11,7 +11,7 @@
 #define BUFFER_SIZE 1024
 
 // Función para convertir una cadena a mayúsculas
-void convertir_nombre_archivo(char *nombre) {
+void aMayuscula(char *nombre) {
     for (int i = 0; nombre[i]; i++) {
         nombre[i] = toupper(nombre[i]);
     }
@@ -50,7 +50,7 @@ int main(int argc, char *argv[]) {
 
     char archivo_salida[BUFFER_SIZE]; // Variable para el nombre del archivo de salida
     strcpy(archivo_salida, archivo_entrada); // Copiar el nombre del archivo de entrada
-    convertir_nombre_archivo(archivo_salida); // Convertir el nombre del archivo a mayúsculas
+    aMayuscula(archivo_salida); // Convertir el nombre del archivo a mayúsculas
 
     printf("Abriendo archivo de salida: %s\n", archivo_salida);
     FILE *salida = fopen(archivo_salida, "w");
