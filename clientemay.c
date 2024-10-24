@@ -7,6 +7,7 @@
 #include <sys/socket.h>
 #include <ctype.h>
 
+// Definimos el tamaño del buffer para el mensaje
 #define BUFFER_SIZE 1024
 
 // Función para convertir una cadena a mayúsculas
@@ -17,15 +18,29 @@ void convertir_nombre_archivo(char *nombre) {
 }
 
 int main(int argc, char *argv[]) {
-    if (argc != 4) {
-        fprintf(stderr, "Uso: %s <archivo_entrada> <IP_servidor> <puerto>\n", argv[0]);
-        exit(EXIT_FAILURE);
+    
+    //PASO 0: Creamos las variables de los parametros de entrada -------------------------------------------
+    char *archivo_entrada;
+    char *ip_servidor;
+    int puerto;
+    if (argc == 4 && atoi(argv[3]) > 0 && atoi(argv[3]) < 65536) {
+        *archivo_entrada = argv[1];
+        *ip_servidor = argv[2];
+        puerto = atoi(argv[3]);
+    } else {
+        do
+        {
+            printf("Uso: %s <archivo_entrada> <ip_servidor> <puerto>\n", argv[0]);
+            printf("Introduce la dirección IP del servidor: ");
+            scanf("%s", ip_servidor);
+            printf("Introduce el puerto del servidor: ");
+            scanf("%d", &puerto);
+
+
+        }while (puerto < 0 || puerto > 65535);
     }
 
-    char *archivo_entrada = argv[1];
-    char *ip_servidor = argv[2];
-    int puerto = atoi(argv[3]);
-
+    // PASO 1: Abrimos los archivos de entrada y salida -----------------------------------------------------
     printf("Abriendo archivo de entrada: %s\n", archivo_entrada);
     FILE *entrada = fopen(archivo_entrada, "r");
     if (!entrada) {
@@ -33,9 +48,9 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    char archivo_salida[BUFFER_SIZE];
-    strcpy(archivo_salida, archivo_entrada);
-    convertir_nombre_archivo(archivo_salida);
+    char archivo_salida[BUFFER_SIZE]; // Variable para el nombre del archivo de salida
+    strcpy(archivo_salida, archivo_entrada); // Copiar el nombre del archivo de entrada
+    convertir_nombre_archivo(archivo_salida); // Convertir el nombre del archivo a mayúsculas
 
     printf("Abriendo archivo de salida: %s\n", archivo_salida);
     FILE *salida = fopen(archivo_salida, "w");
@@ -45,9 +60,10 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    int cliente_socket;
-    struct sockaddr_in direccion_servidor;
-    char buffer[BUFFER_SIZE];
+    // PASO 2: Creamos el socket del cliente ----------------------------------------------------------------
+    int cliente_socket; // Socket de la conexion
+    struct sockaddr_in direccion_servidor; // Dirección del servidor
+    char buffer[BUFFER_SIZE]; // Cadena de texto para enviar y recibir datos
 
     printf("Creando socket del cliente...\n");
     // Crear socket del cliente
@@ -59,9 +75,9 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    // Configurar la dirección del servidor
-    direccion_servidor.sin_family = AF_INET;
-    direccion_servidor.sin_port = htons(puerto);
+    // PASO 3: Configuramos la dirección del servidor -----------------------------------------------------
+    direccion_servidor.sin_family = AF_INET; // Familia de direcciones IPv4
+    direccion_servidor.sin_port = htons(puerto); // Convertir el puerto de cadena a entero
     if (inet_pton(AF_INET, ip_servidor, &direccion_servidor.sin_addr) <= 0) {
         perror("Error en inet_pton");
         close(cliente_socket);
@@ -70,9 +86,10 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
+    // PASO 4: Conectamos al servidor -----------------------------------------------------------------------
     printf("Conectando al servidor en %s:%d...\n", ip_servidor, puerto);
     // Conectar al servidor
-    if (connect(cliente_socket, (struct sockaddr *)&direccion_servidor, sizeof(direccion_servidor)) < 0) {
+    if (connect(cliente_socket, (struct sockaddr *)&direccion_servidor, sizeof(direccion_servidor)) < 0) { // Si la función devuelve un valor negativo, hay error
         perror("Error al conectar con el servidor");
         close(cliente_socket);
         fclose(entrada);
@@ -80,16 +97,17 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
+    // PASO 5: Enviar y recibir datos ------------------------------------------------------------------------
     printf("Conexión establecida. Enviando datos...\n");
-    while (fgets(buffer, BUFFER_SIZE, entrada)) {
-        send(cliente_socket, buffer, strlen(buffer), 0);
-        memset(buffer, 0, BUFFER_SIZE);
-        recv(cliente_socket, buffer, BUFFER_SIZE, 0);
-        fprintf(salida, "%s", buffer);
+    while (fgets(buffer, BUFFER_SIZE, entrada)) { // Leer línea por línea del archivo de entrada
+        send(cliente_socket, buffer, strlen(buffer)+1, 0); // Enviar la línea al servidor
+        memset(buffer, 0, BUFFER_SIZE); // Limpiar el buffer
+        recv(cliente_socket, buffer, BUFFER_SIZE, 0); // Recibir la línea convertida a mayúsculas
+        fprintf(salida, "%s", buffer); // Escribir la línea en el archivo de salida
     }
 
-    printf("Cerrando conexión y archivos...\n");
-    close(cliente_socket);
+    printf("Cerrando conexión y archivos...\n"); // Cerrar la conexión y los archivos
+    close(cliente_socket); // Cerrar el socket del cliente
     fclose(entrada);
     fclose(salida);
 
