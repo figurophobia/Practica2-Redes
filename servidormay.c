@@ -17,12 +17,17 @@ void convertir_a_mayusculas(char *str) {
 }
 
 int main(int argc, char *argv[]) {
-    if (argc != 2) {
-        fprintf(stderr, "Uso: %s <puerto>\n", argv[0]);
-        exit(EXIT_FAILURE);
+    int puerto = 0;
+    // Si solo se ha introducido un argumento, y el puerto introducido es válido, seleccionamos el puerto introducido
+    if (argc == 2 && atoi(argv[1]) > 0 && atoi(argv[1]) < 65536) {
+        printf("Puerto: %s\n", argv[1]);
+        puerto = atoi(argv[1]);
+    // En caso contrario, seleccionamos un puerto por defecto
+    } else {
+        printf("Usando el puerto 50000 por defecto\n");
+        puerto = 50000;
     }
 
-    int puerto = atoi(argv[1]);
     int servidor_socket, cliente_socket;
     struct sockaddr_in direccion_servidor, direccion_cliente;
     socklen_t cliente_len = sizeof(direccion_cliente);
@@ -82,9 +87,7 @@ int main(int argc, char *argv[]) {
                 break;
             }
 
-            printf("Recibido del cliente: %s", buffer);
             convertir_a_mayusculas(buffer);
-            printf("Enviando al cliente: %s", buffer);
             send(cliente_socket, buffer, strlen(buffer), 0);
         }
 

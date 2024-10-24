@@ -9,6 +9,7 @@
 
 #define BUFFER_SIZE 1024
 
+// Función para convertir una cadena a mayúsculas
 void convertir_nombre_archivo(char *nombre) {
     for (int i = 0; nombre[i]; i++) {
         nombre[i] = toupper(nombre[i]);
@@ -81,11 +82,9 @@ int main(int argc, char *argv[]) {
 
     printf("Conexión establecida. Enviando datos...\n");
     while (fgets(buffer, BUFFER_SIZE, entrada)) {
-        printf("Enviando línea al servidor: %s", buffer);
         send(cliente_socket, buffer, strlen(buffer), 0);
         memset(buffer, 0, BUFFER_SIZE);
         recv(cliente_socket, buffer, BUFFER_SIZE, 0);
-        printf("Recibido del servidor: %s", buffer);
         fprintf(salida, "%s", buffer);
     }
 
