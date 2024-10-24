@@ -6,7 +6,7 @@
 #include <sys/socket.h>
 
 // Definimos el tamaño del buffer para el mensaje de saludo
-#define BUFFER_SIZE 1024
+#define buffer_SIZE 1024
 
 int main(int argc, char *argv[]) {
     char ip[INET_ADDRSTRLEN];
@@ -34,9 +34,9 @@ int main(int argc, char *argv[]) {
 
     // PASO 0: Creamos las variables ---------------------------------------------------------------------
     int sock; // Socket de la conexión
-    struct sockaddr_in server_addr; // Dirección del servidor
-    char buffer[BUFFER_SIZE]; // Cadena de texto para recibir datos
-    int bytes_received; // Número de bytes recibidos
+    struct sockaddr_in direccionServidor; // Dirección del servidor
+    char buffer[buffer_SIZE]; // Cadena de texto para recibir datos
+    int bytesRecibidos; // Número de bytes recibidos
 
     // PASO 1: Creamos el socket del cliente ------------------------------------------------------------
     sock = socket(AF_INET, SOCK_STREAM, 0); // AF_INET para IPv4, SOCK_STREAM para protocolo TCP
@@ -46,33 +46,33 @@ int main(int argc, char *argv[]) {
     }
 
     // PASO 2: Configuramos la dirección del servidor ----------------------------------------------------
-    server_addr.sin_family = AF_INET; // Familia de direcciones IPv4
-    server_addr.sin_port = htons(puerto); // Convertir el puerto de entero a formato de red
-    if (inet_pton(AF_INET, ip, &server_addr.sin_addr) <= 0) {
+    direccionServidor.sin_family = AF_INET; // Familia de direcciones IPv4
+    direccionServidor.sin_port = htons(puerto); // Convertir el puerto de entero a formato de red
+    if (inet_pton(AF_INET, ip, &direccionServidor.sin_addr) <= 0) {
         perror("Error al convertir la IP");
         close(sock);
         return 1;
     }
 
     // PASO 3: Conectamos al servidor ---------------------------------------------------------------------
-    if (connect(sock, (struct sockaddr *)&server_addr, sizeof(server_addr)) == -1) { // Si la función devuelve un valor negativo, hay error
+    if (connect(sock, (struct sockaddr *)&direccionServidor, sizeof(direccionServidor)) == -1) { // Si la función devuelve un valor negativo, hay error
         perror("Error al conectar al servidor");
         close(sock); // Cerramos el socket
         return 1;
     }
 
     // PASO 4: Recibimos datos del servidor ----------------------------------------------------------------
-    bytes_received = recv(sock, buffer, BUFFER_SIZE - 1, 0); // Recibimos datos del servidor
-    if (bytes_received == -1) { // Si la función devuelve un valor negativo, hay error
+    bytesRecibidos = recv(sock, buffer, buffer_SIZE - 1, 0); // Recibimos datos del servidor
+    if (bytesRecibidos == -1) { // Si la función devuelve un valor negativo, hay error
         perror("Error al recibir datos del servidor");
         close(sock);
         return 1;
     }
 
     // PASO 5: Mostramos los datos recibidos ----------------------------------------------------------------
-    buffer[bytes_received] = '\0'; // Asegurarse de que el buffer esté terminado en nulo
-    printf("Mensaje recibido: %s\n", buffer);
-    printf("Número de bytes recibidos: %d\n", bytes_received);
+    buffer[bytesRecibidos] = '\0'; // Asegurarse de que el buffer esté terminado en nulo
+    printf("buffer recibido: %s\n", buffer);
+    printf("Número de bytes recibidos: %d\n", bytesRecibidos);
 
     // Cerrar el socket
     close(sock);
