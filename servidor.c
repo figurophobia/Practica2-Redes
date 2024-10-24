@@ -24,37 +24,37 @@ int main(int argc, char *argv[]) {
 
     // PASO 0: Creamos las variables ---------------------------------------------------------------------
 
-    int servidor_socket, cliente_socket; // Variables para los sockets de servidor y conexión
-    struct sockaddr_in direccion_servidor, direccion_cliente; // Struct para la dirección IP
-    socklen_t cliente_len = sizeof(direccion_cliente); // Variable para el tamaño de la dirección del cliente
+    int socketServidor, socketCliente; // Variables para los sockets de servidor y conexión
+    struct sockaddr_in direccionServidor, direccionCliente; // Struct para la dirección IP
+    socklen_t tamanoCliente = sizeof(direccionCliente); // Variable para el tamaño de la dirección del cliente
     char buffer[BUFFER_SIZE] = "¡Hola, cliente! Bienvenido al servidor.\n"; // String para el mensaje de saludo del servidor
 
     /// PASO 1: Creamos el socket del servidor ------------------------------------------------------------
 
-    servidor_socket = socket(AF_INET, SOCK_STREAM, 0); // AF_INET para IPv4, SOCK_STREAM para protocolo TCP
-    if (servidor_socket < 0) { // Si la función devuelve un valor negativo, significa que hubo un error en la creación del socket
+    socketServidor = socket(AF_INET, SOCK_STREAM, 0); // AF_INET para IPv4, SOCK_STREAM para protocolo TCP
+    if (socketServidor < 0) { // Si la función devuelve un valor negativo, significa que hubo un error en la creación del socket
         perror("Error al crear el socket del servidor");
         exit(EXIT_FAILURE);
     }
 
     // PASO 2: Configuramos la dirección del servidor ----------------------------------------------------
 
-    direccion_servidor.sin_family = AF_INET; // Familia de direcciones IPv4
-    direccion_servidor.sin_addr.s_addr = INADDR_ANY; // Escuchar en todas las interfaces
-    direccion_servidor.sin_port = htons(puerto); // Convierte el puerto pasado por línea de comandos a formato de red
+    direccionServidor.sin_family = AF_INET; // Familia de direcciones IPv4
+    direccionServidor.sin_addr.s_addr = INADDR_ANY; // Escuchar en todas las interfaces
+    direccionServidor.sin_port = htons(puerto); // Convierte el puerto pasado por línea de comandos a formato de red
     
     // Asociamos el socket con la dirección y puerto
-    if (bind(servidor_socket, (struct sockaddr *)&direccion_servidor, sizeof(direccion_servidor)) < 0) { // Si devuelve un negativo, hay error
+    if (bind(socketServidor, (struct sockaddr *)&direccionServidor, sizeof(direccionServidor)) < 0) { // Si devuelve un negativo, hay error
         perror("Error al hacer bind en el socket del servidor");
-        close(servidor_socket); // Cerramos el socket
+        close(socketServidor); // Cerramos el socket
         exit(EXIT_FAILURE);
     }
 
     // PASO 3. Marcamos el socket como pasivo, para que pueda escuchar peticiones ------------------------
 
-    if (listen(servidor_socket, 5) < 0) { // El 5 es el número máximo de solicitudes en espera. Si la función devuelve un negativo, hay error
+    if (listen(socketServidor, 5) < 0) { // El 5 es el número máximo de solicitudes en espera. Si la función devuelve un negativo, hay error
         perror("Error al hacer listen en el socket del servidor");
-        close(servidor_socket); // Cerramos el socket si hay error
+        close(socketServidor); // Cerramos el socket si hay error
         exit(EXIT_FAILURE);
     }
 
@@ -66,22 +66,22 @@ int main(int argc, char *argv[]) {
 
         // Aceptamos la conexión del cliente
 
-        cliente_socket = accept(servidor_socket, (struct sockaddr *)&direccion_cliente, &cliente_len);
-        if (cliente_socket < 0) { // Si hay error, informamos y cerramos el socket del servidor
+        socketCliente = accept(socketServidor, (struct sockaddr *)&direccionCliente, &tamanoCliente);
+        if (socketCliente < 0) { // Si hay error, informamos y cerramos el socket del servidor
             perror("Error al aceptar la conexión");
-            close(servidor_socket);
+            close(socketServidor);
             exit(EXIT_FAILURE);
         }
 
         // Obtenemos la IP y puerto del cliente
 
-        char cliente_ip[INET_ADDRSTRLEN]; // Cadena de caracteres para almacenar la IP del cliente
-        inet_ntop(AF_INET, &direccion_cliente.sin_addr, cliente_ip, INET_ADDRSTRLEN); // Convertimos la dirección IP del cliente a texto legible
-        printf("Conexión aceptada de %s:%d\n", cliente_ip, ntohs(direccion_cliente.sin_port)); // Mostramos la IP y puerto del cliente. ntohs() convierte el puerto de formato de red a formato de host.
+        char ipCliente[INET_ADDRSTRLEN]; // Cadena de caracteres para almacenar la IP del cliente
+        inet_ntop(AF_INET, &direccionCliente.sin_addr, ipCliente, INET_ADDRSTRLEN); // Convertimos la dirección IP del cliente a texto legible
+        printf("Conexión aceptada de %s:%d\n", ipCliente, ntohs(direccionCliente.sin_port)); // Mostramos la IP y puerto del cliente. ntohs() convierte el puerto de formato de red a formato de host.
 
         // Enviamos mensaje de saludo al cliente
 
-        ssize_t enviado = send(cliente_socket, buffer, strlen(buffer)+1, 0);
+        ssize_t enviado = send(socketCliente, buffer, strlen(buffer)+1, 0);
         if (enviado < 0) {
             perror("Error al enviar el mensaje al cliente");
         } else {
@@ -90,11 +90,11 @@ int main(int argc, char *argv[]) {
 
         // Cerramos el socket de conexión con el cliente
 
-        close(cliente_socket);
+        close(socketCliente);
     }
 
     // Cerramos el socket del servidor
-    close(servidor_socket);
+    close(socketServidor);
 
     return 0;
 }
