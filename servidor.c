@@ -84,7 +84,7 @@ int main(int argc, char *argv[]) {
         char ipCliente[INET_ADDRSTRLEN]; // Cadena de caracteres para almacenar la IP del cliente
         inet_ntop(AF_INET, &direccionCliente.sin_addr, ipCliente, INET_ADDRSTRLEN); // Convertimos la dirección IP del cliente a texto legible
         int puerto_cliente = ntohs(direccionCliente.sin_port); // Mostramos la IP y puerto del cliente. ntohs() convierte el puerto de formato de red a formato de host.
-        printf("Conexión aceptada desde %s:%d\n", ip_cliente, puerto_cliente);
+        printf("Conexión aceptada desde %s:%d\n", ipCliente, puerto_cliente);
         
         // Enviamos mensaje de saludo al cliente
 
