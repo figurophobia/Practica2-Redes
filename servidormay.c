@@ -7,6 +7,8 @@
 #include <sys/socket.h>
 #include <ctype.h>
 
+// NOTA: Comentarios más exhaustivos sobre las funciones utilizadas en servidor.c
+
 // Definimos el tamaño del buffer para el mensaje de saludo
 #define BUFFER_SIZE 1024
 
