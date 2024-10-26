@@ -7,6 +7,8 @@
 #include <sys/socket.h>
 #include <ctype.h>
 
+// NOTA: Las funciones (parámetros y salidas) están comentadas más exhaustivamente en cliente.c.
+
 // Definimos el tamaño del buffer para el mensaje
 #define BUFFER_SIZE 1024
 
