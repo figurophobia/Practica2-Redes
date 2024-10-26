@@ -12,8 +12,8 @@
 int main(int argc, char *argv[]) {
 
     int puerto = 0;
-    // Si solo se ha introducido un argumento, y el puerto introducido es válido, seleccionamos el puerto introducido
-    if (argc == 2 && atoi(argv[1]) > 0 && atoi(argv[1]) < 65536) {
+    // Si solo se ha introducido un argumento (dos contando el nombre del ejecutable), y el puerto introducido es válido, seleccionamos el puerto introducido
+    if (argc == 2 && atoi(argv[1]) > 0 && atoi(argv[1]) < 65536) { // atoi convierte a entero. Nos aseguramos de que el puerto introducido sea válido.
         printf("Puerto: %s\n", argv[1]);
         puerto = atoi(argv[1]);
     // En caso contrario, seleccionamos un puerto por defecto
@@ -32,7 +32,7 @@ int main(int argc, char *argv[]) {
     /// PASO 1: Creamos el socket del servidor ------------------------------------------------------------
 
     printf("Creando socket del servidor...\n");
-    socketServidor = socket(AF_INET, SOCK_STREAM, 0); // AF_INET para IPv4, SOCK_STREAM para protocolo TCP
+    socketServidor = socket(AF_INET, SOCK_STREAM, 0); // AF_INET para IPv4, SOCK_STREAM para conexiones orientadas (protocolo TCP), 0 para seleccionar el protocolo adecuado para el socket elegido (con nuestros parámetros, será TCP).
     if (socketServidor < 0) { // Si la función devuelve un valor negativo, significa que hubo un error en la creación del socket
         perror("Error al crear el socket del servidor");
         exit(EXIT_FAILURE);
@@ -49,6 +49,11 @@ int main(int argc, char *argv[]) {
 
     printf("Asociando el socket con la dirección y puerto...\n");
     if (bind(socketServidor, (struct sockaddr *)&direccionServidor, sizeof(direccionServidor)) < 0) { // Si devuelve un negativo, hay error
+        // socketServidor: socket previamente configurado
+        // (struct sockaddr *)&direccionServidor: puntero a sockaddr_in con la dirección y puerto del servidor. EL cast es porque el bind() espera un puntero a struct sockaddr; lo convertimos.
+        // sizeof(direccionServidor): tamaño en bytes de la estructura de la dirección
+        // La función asocia el socket a una dirección específica (es decir, IP y puerto)
+        
         perror("Error al hacer bind en el socket del servidor");
         close(socketServidor); // Cerramos el socket
         exit(EXIT_FAILURE);
@@ -57,7 +62,7 @@ int main(int argc, char *argv[]) {
     // PASO 3. Marcamos el socket como pasivo, para que pueda escuchar peticiones ------------------------
 
     printf("Poniendo el socket en modo de escucha...\n");
-    if (listen(socketServidor, 5) < 0) { // El 5 es el número máximo de solicitudes en espera. Si la función devuelve un negativo, hay error
+    if (listen(socketServidor, 5) < 0) { // El 5 es el número máximo de solicitudes en espera. Si la función devuelve un negativo, hay error. socketServidor es el socket del servidor, trivialmente.
         perror("Error al hacer listen en el socket del servidor");
         close(socketServidor); // Cerramos el socket si hay error
         exit(EXIT_FAILURE);
@@ -73,6 +78,9 @@ int main(int argc, char *argv[]) {
 
         printf("Esperando una conexión...\n");
         socketCliente = accept(socketServidor, (struct sockaddr *)&direccionCliente, &tamanoCliente);
+            // socketServidor: socket del servidor que escucha
+            // (struct sockaddr *)&direccionCliente: estructura para almacenar la dirección del cliente.
+            // &tamanoCliente: tamaño en bytes de la estructura de la dirección del cliente.
         if (socketCliente < 0) { // Si hay error, informamos y cerramos el socket del servidor
             perror("Error al aceptar la conexión");
             close(socketServidor);
@@ -83,12 +91,23 @@ int main(int argc, char *argv[]) {
 
         char ipCliente[INET_ADDRSTRLEN]; // Cadena de caracteres para almacenar la IP del cliente
         inet_ntop(AF_INET, &direccionCliente.sin_addr, ipCliente, INET_ADDRSTRLEN); // Convertimos la dirección IP del cliente a texto legible
+        
+            // AF_INET: especifica la familia IPv4
+            // &direccionCliente.sin_addr: puntero a la IP en binario
+            // ipCliente: puntero a una cadena de caracteres en la que se almacenará la IP textual
+            // INET_ADDRSTRLEN: constante que define el tamaño mínimo del buffer para almacenar una dirección IPv4 en formato textual.
+        
         int puerto_cliente = ntohs(direccionCliente.sin_port); // Mostramos la IP y puerto del cliente. ntohs() convierte el puerto de formato de red a formato de host.
         printf("Conexión aceptada desde %s:%d\n", ipCliente, puerto_cliente);
         
         // Enviamos mensaje de saludo al cliente
 
-        ssize_t enviado = send(socketCliente, buffer, strlen(buffer)+1, 0);
+        ssize_t enviado = send(socketCliente, buffer, strlen(buffer)+1, 0); // send envía datos al cliente conectado.
+            // socketCliente: socket cliente
+            // buffer: es el mensaje a enviar
+            // strlen(buffer)+1: longitud del mensaje en bytes, el +1 es para incluir el caracter nulo \0
+            // 0: funcionamiento por defecto
+
         if (enviado < 0) {
             perror("Error al enviar el mensaje al cliente");
         } else {
